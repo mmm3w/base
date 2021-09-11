@@ -10,8 +10,8 @@ import androidx.core.view.marginBottom
 import androidx.core.view.marginEnd
 import androidx.core.view.marginStart
 import androidx.core.view.marginTop
-import com.mitsuki.armory.extend.marginHorizontal
-import com.mitsuki.armory.extend.marginVertical
+import com.mitsuki.armory.base.extend.marginHorizontal
+import com.mitsuki.armory.base.extend.marginVertical
 
 class TagsView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

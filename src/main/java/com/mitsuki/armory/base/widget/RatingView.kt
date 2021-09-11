@@ -10,8 +10,8 @@ import android.view.MotionEvent
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.core.content.res.ResourcesCompat
-import com.mitsuki.armory.R
-import com.mitsuki.armory.extend.dp2px
+import com.mitsuki.armory.base.R
+import com.mitsuki.armory.base.extend.dp2px
 import kotlin.math.floor
 import kotlin.math.min
 
