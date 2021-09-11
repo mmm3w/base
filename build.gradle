@@ -57,7 +57,7 @@ uploadArchives{
     repositories {
         mavenDeployer {
             pom.groupId = 'com.mitsuki.armory'
-            pom.artifactId = 'httprookie'
+            pom.artifactId = 'base'
             pom.version = module_version.name
             pom.packaging = 'aar'
             repository(url: uri("${rootProject.projectDir}/maven"))
