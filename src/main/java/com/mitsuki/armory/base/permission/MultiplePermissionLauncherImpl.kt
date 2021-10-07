@@ -5,14 +5,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import java.lang.ref.WeakReference
 
 class MultiplePermissionLauncherImpl(
-    val activity: ComponentActivity,
-    val permission: Array<String>
+    private val activity: ComponentActivity,
+    private val permission: Array<String>
 ) :
     PermissionLauncher {
 
     private val launcher =
         activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-            cbReference?.get()?.invoke(it)
+            it.forEach { entry ->
+                if (entry.value == false) {
+                    cbReference?.get()?.invoke(false)
+                    return@registerForActivityResult
+                }
+            }
+            cbReference?.get()?.invoke(true)
         }
 
     private var cbReference: WeakReference<(Boolean) -> Unit>? = null
