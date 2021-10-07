@@ -12,7 +12,7 @@ class MultiplePermissionLauncherImpl(
 
     private val launcher =
         activity.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-
+            cbReference?.get()?.invoke(it)
         }
 
     private var cbReference: WeakReference<(Boolean) -> Unit>? = null

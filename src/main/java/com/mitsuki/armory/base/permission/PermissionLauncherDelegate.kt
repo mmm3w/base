@@ -6,7 +6,10 @@ import kotlin.reflect.KProperty
 
 class PermissionLauncherDelegate(private val permission: String) :
     ReadOnlyProperty<ComponentActivity, PermissionLauncher> {
+
+    private val launcherImpl = PermissionLauncherImpl(thisRef, permission)
+
     override fun getValue(thisRef: ComponentActivity, property: KProperty<*>): PermissionLauncher {
-        return PermissionLauncherImpl(thisRef, permission)
+        return launcherImpl
     }
 }
