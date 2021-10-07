@@ -4,8 +4,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import java.lang.ref.WeakReference
 
-class PermissionLauncherImpl(val activity: ComponentActivity, val permission: String) :
-    PermissionLauncher {
+class PermissionLauncherImpl(
+    private val activity: ComponentActivity,
+    private val permission: String
+) : PermissionLauncher {
 
     private val launcher =
         activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) {

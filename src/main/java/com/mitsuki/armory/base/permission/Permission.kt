@@ -4,10 +4,10 @@ import android.Manifest
 import androidx.activity.ComponentActivity
 
 fun ComponentActivity.permissionLauncher(permission: String) =
-    PermissionLauncherDelegate(permission)
+    PermissionLauncherImpl(this, permission)
 
 fun ComponentActivity.multiplePermissionLauncher(permission: Array<String>) =
-    MultiplePermissionLauncherDelegate(permission)
+    MultiplePermissionLauncherImpl(this, permission)
 
 fun ComponentActivity.readStorePermissionLauncher() =
     permissionLauncher(Manifest.permission.READ_EXTERNAL_STORAGE)
