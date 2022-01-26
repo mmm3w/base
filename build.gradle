@@ -46,8 +46,6 @@ dependencies {
     androidTestImplementation deps.atsl.ext_junit
     androidTestImplementation deps.espresso.core
 
-    implementation deps.arouter
-
     implementation deps.appcompat
     implementation deps.recyclerview
 }

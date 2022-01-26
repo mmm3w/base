@@ -3,6 +3,7 @@ package com.mitsuki.armory.base
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
+import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -16,17 +17,14 @@ import java.lang.RuntimeException
 /**
  * 通知渠道便捷管理
  */
-object NotificationHelper {
+class NotificationHelper(context: Context, func: ChannelSet.() -> Unit) {
+
     private val channelSet: ChannelSet by lazy { ChannelSet() }
 
-    private lateinit var mContext: Context
-    private lateinit var mNotificationManager: NotificationManagerCompat
+    private val mNotificationManager: NotificationManagerCompat =
+        NotificationManagerCompat.from(context.applicationContext)
 
-    /**
-     * 请在application提前初始化渠道和渠道组
-     */
-    fun initChannel(context: Context, func: ChannelSet.() -> Unit) {
-        this.mContext = context
+    init {
         this.channelSet.apply(func)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -41,70 +39,76 @@ object NotificationHelper {
      * 最好使用该方法发出通知
      */
     fun notify(
+        context:Context,
         channelID: String,
         notifyID: Int = -1,
-        func: (Context, NotificationCompat.Builder) -> Unit
+        func: (NotificationCompat.Builder) -> Unit
     ): Int {
-        return builder(channelID)?.run {
+        return builder(context, channelID)?.run {
             val nid = if (notifyID < 0) System.currentTimeMillis().toInt() else notifyID
-            func(this@NotificationHelper.mContext, this)
-            notificationManagerInstance().notify(nid, build())
+            func(this)
+            mNotificationManager.notify(nid, build())
             nid
         } ?: -1
+    }
+
+    fun startForeground(
+        service: Service,
+        channelID: String,
+        id: Int,
+        func: (NotificationCompat.Builder) -> Unit
+    ): Boolean {
+        return builder(service as Context, channelID)?.run {
+            func(this)
+            service.startForeground(id, build())
+            true
+        } ?: false
     }
 
     /**
      * 通知权限判断，在缺少权限的时候会获得一个跳往通知设置的intent
      * 部分手机默认关闭通知权限，需要该方法辅助
      */
-    fun permission(func: Intent.() -> Unit): NotificationHelper? {
-        return if (notificationManagerInstance().areNotificationsEnabled()) {
+    fun permission(context: Context, func: Intent.() -> Unit): NotificationHelper? {
+        return if (mNotificationManager.areNotificationsEnabled()) {
             this
         } else {
-            permissionIntent().apply(func)
+            permissionIntent(context).apply(func)
             null
         }
     }
 
     fun deleteChannel(channelID: String) {
         channelSet.deleteChannel(channelID)
-        notificationManagerInstance().deleteNotificationChannel(channelID)
+        mNotificationManager.deleteNotificationChannel(channelID)
     }
 
 
     fun deleteGroup(groupID: String) {
         channelSet.deleteGroup(groupID)
-        notificationManagerInstance().deleteNotificationChannelGroup(groupID)
+        mNotificationManager.deleteNotificationChannelGroup(groupID)
     }
 
     /**
      * 这里已经包含渠道importance和通知的priority的处理，所以其他地方尽量不要再动
      * 否则可能会造成在不同Android版本下通知优先级的不同步
      */
-    private fun builder(channelID: String): NotificationCompat.Builder? {
+    private fun builder(context: Context, channelID: String): NotificationCompat.Builder? {
         return channelSet.channel(channelID)?.run {
-            return NotificationCompat.Builder(mContext, id).setPriority(priority)
+            return NotificationCompat.Builder(context, id).setPriority(priority)
         }
     }
 
-    private fun notificationManagerInstance(): NotificationManagerCompat {
-        if (this::mNotificationManager.isInitialized) {
-            return mNotificationManager
-        }
-        mNotificationManager = NotificationManagerCompat.from(mContext)
-        return mNotificationManager
-    }
-
-    private fun permissionIntent(): Intent {
+    private fun permissionIntent(context: Context): Intent {
         return Intent().apply {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
-                putExtra(Settings.EXTRA_APP_PACKAGE, mContext.packageName)
-                putExtra(Settings.EXTRA_CHANNEL_ID, mContext.applicationInfo.uid)
+                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                putExtra(Settings.EXTRA_CHANNEL_ID, context.applicationInfo.uid)
             } else {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-                data = Uri.fromParts("package", mContext.packageName, null)
+                data = Uri.fromParts("package", context.packageName, null)
             }
         }
     }
